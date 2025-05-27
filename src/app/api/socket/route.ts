@@ -1,25 +1,31 @@
 // src/app/api/socket/route.ts
 
-import { NextRequest } from 'next/server';
-import { Server as NetServer } from 'http';
+import { NextResponse } from 'next/server';
 import { Server as SocketIOServer } from 'socket.io';
-import { NextApiResponse } from 'next';
 
 export const dynamic = 'force-dynamic';
 
-type NextApiResponseServerIO = NextApiResponse & {
-  socket: {
-    server: NetServer & {
-      io?: SocketIOServer;
-    };
-  };
-};
+// This is needed because the App Router doesn't expose the underlying HTTP server directly
+// We need to use a global instance of Socket.IO
+let io: SocketIOServer;
 
-const SocketHandler = (req: NextRequest, res: NextApiResponseServerIO) => {
-  if (!res.socket.server.io) {
+// Initialize Socket.IO server if not already initialized
+function initSocketServer() {
+  if (!io) {
+    // Get the server instance from global
+    // Using type assertion with a more specific type for the server
+    const httpServer = (process as unknown as { 
+      server: import('http').Server 
+    }).server;
+    
+    if (!httpServer) {
+      console.error("HTTP server not available");
+      return null;
+    }
+    
     console.log('Setting up Socket.IO server...');
     
-    const io = new SocketIOServer(res.socket.server, {
+    io = new SocketIOServer(httpServer, {
       path: '/api/socket',
       addTrailingSlash: false,
       cors: {
@@ -73,11 +79,17 @@ const SocketHandler = (req: NextRequest, res: NextApiResponseServerIO) => {
         console.log('User disconnected:', socket.id);
       });
     });
-    
-    res.socket.server.io = io;
   }
   
-  return new Response('Socket server initialized', { status: 200 });
-};
+  return io;
+}
 
-export { SocketHandler as GET, SocketHandler as POST };
+export async function GET() {
+  initSocketServer();
+  return NextResponse.json({ success: true, message: 'Socket server initialized' });
+}
+
+export async function POST() {
+  initSocketServer();
+  return NextResponse.json({ success: true, message: 'Socket server initialized' });
+}

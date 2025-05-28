@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useEffect, useRef, useState } from 'react';
-import YouTube, { YouTubePlayer, YouTubeEvent } from 'react-youtube';
-import type { YouTubeProps } from 'react-youtube';
-import { Play } from 'lucide-react';
+import { useEffect, useRef, useState } from "react";
+import YouTube, { YouTubePlayer, YouTubeEvent } from "react-youtube";
+import type { YouTubeProps } from "react-youtube";
+import { Play } from "lucide-react";
 
 interface VideoPlayerProps {
   videoId: string;
@@ -56,9 +56,8 @@ const VideoPlayer = ({
       if (isPlaying) {
         // Thử phát video, nếu không được thì đánh dấu cần tương tác
         const playPromise = playerRef.current.playVideo();
-        if (playPromise && typeof playPromise.catch === 'function') {
+        if (playPromise && typeof playPromise.catch === "function") {
           playPromise.catch(() => {
-            console.log('Autoplay blocked, waiting for user interaction');
             setNeedsUserInteraction(true);
             setPendingPlay(true);
           });
@@ -69,7 +68,7 @@ const VideoPlayer = ({
         setNeedsUserInteraction(false);
       }
     } catch (error) {
-      console.error('Error controlling YouTube player:', error);
+      console.error("Error controlling YouTube player:", error);
       if (isPlaying) {
         setNeedsUserInteraction(true);
         setPendingPlay(true);
@@ -79,48 +78,46 @@ const VideoPlayer = ({
     // Reset flag sau một khoảng thời gian dài hơn để cho phép tất cả state changes settle
     setTimeout(() => {
       programmaticChangeRef.current = false;
-      console.log('Programmatic flag reset after play/pause operation');
     }, 2000); // Tăng thời gian để đảm bảo tất cả state changes hoàn thành
   }, [isPlaying, playerLoaded]);
 
   // Cập nhật thời gian khi currentTime thay đổi - CHỈ cho sync events quan trọng
   useEffect(() => {
     if (!playerRef.current || !playerLoaded) return;
-    
+
     try {
       // CHỈ seek khi có sự khác biệt RẤT LỚN (>15 giây) để tránh seek loops
       // Điều này chỉ xảy ra khi:
       // 1. User mới join room và cần sync
-      // 2. Someone seeks manually 
+      // 2. Someone seeks manually
       // 3. Video mới được chọn
       const playerTime = playerRef.current.getCurrentTime();
       const timeDiff = Math.abs(playerTime - currentTime);
-      
-      if (timeDiff > 15) { // Tăng threshold lên 15 giây
-        console.log(`Major sync needed: seeking from ${playerTime} to ${currentTime} (diff: ${timeDiff}s)`);
+
+      if (timeDiff > 15) {
+        // Tăng threshold lên 15 giây
         programmaticChangeRef.current = true;
         lastStateRef.current = -1; // Reset state tracking for seek operation
         playerRef.current.seekTo(currentTime, true);
-        
+
         // Reset flag sau seek với thời gian rất dài
         setTimeout(() => {
           programmaticChangeRef.current = false;
-          console.log('Programmatic flag reset after seek operation');
         }, 3000); // Tăng thời gian lên 3 giây cho seek operations
       }
     } catch (error) {
-      console.error('Error seeking in YouTube player:', error);
+      console.error("Error seeking in YouTube player:", error);
     }
   }, [currentTime, playerLoaded]);
-  
+
   // Cập nhật âm lượng khi volume thay đổi
   useEffect(() => {
     if (!playerRef.current || !playerLoaded) return;
-    
+
     try {
       playerRef.current.setVolume(volume);
     } catch (error) {
-      console.error('Error setting volume in YouTube player:', error);
+      console.error("Error setting volume in YouTube player:", error);
     }
   }, [volume, playerLoaded]);
 
@@ -143,9 +140,9 @@ const VideoPlayer = ({
   }, [videoId]);
 
   // Cấu hình cho YouTube IFrame API
-  const opts: YouTubeProps['opts'] = {
-    height: '100%',
-    width: '100%',
+  const opts: YouTubeProps["opts"] = {
+    height: "100%",
+    width: "100%",
     playerVars: {
       // Cài đặt cho YouTube Player
       autoplay: isPlaying ? 1 : 0, // Bật autoplay nếu đang phát
@@ -154,7 +151,7 @@ const VideoPlayer = ({
       fs: 0, // Tắt nút full screen
       rel: 0, // Không hiển thị video liên quan khi kết thúc
       modestbranding: 1, // Ẩn logo YouTube
-      origin: typeof window !== 'undefined' ? window.location.origin : '',
+      origin: typeof window !== "undefined" ? window.location.origin : "",
       enablejsapi: 1, // Bật JavaScript API
       start: Math.floor(currentTime), // Bắt đầu từ thời gian hiện tại
       playsinline: 1, // Cho phép video chạy trong iframe trên iOS
@@ -165,7 +162,7 @@ const VideoPlayer = ({
     playerRef.current = event.target;
     setPlayerLoaded(true);
     setIsLoading(false);
-    
+
     // Set initial volume
     if (playerRef.current) {
       playerRef.current.setVolume(volume);
@@ -175,7 +172,7 @@ const VideoPlayer = ({
     // Thiết lập trạng thái ban đầu với programmatic flag
     programmaticChangeRef.current = true;
     lastStateRef.current = -1; // Reset state tracking
-    
+
     if (currentTime > 0) {
       event.target.seekTo(currentTime, true);
     }
@@ -183,9 +180,8 @@ const VideoPlayer = ({
     // Thử phát video nếu đang trong trạng thái phát
     if (isPlaying) {
       const playPromise = event.target.playVideo();
-      if (playPromise && typeof playPromise.catch === 'function') {
+      if (playPromise && typeof playPromise.catch === "function") {
         playPromise.catch(() => {
-          console.log('Autoplay blocked on ready, waiting for user interaction');
           setNeedsUserInteraction(true);
           setPendingPlay(true);
         });
@@ -195,7 +191,6 @@ const VideoPlayer = ({
     // Reset programmatic flag after initial setup
     setTimeout(() => {
       programmaticChangeRef.current = false;
-      console.log('Programmatic flag reset after player ready');
     }, 3000); // Longer timeout for initial setup
 
     // Track thời gian để cập nhật UI (không gửi sync events)
@@ -210,41 +205,40 @@ const VideoPlayer = ({
 
   const handleStateChange = (event: YouTubeEvent) => {
     const currentState = event.data;
-    
-    console.log('YouTube state change:', currentState, 'Programmatic:', programmaticChangeRef.current, 'Last State:', lastStateRef.current);
-    
+
     // Prevent rapid duplicate state change events
     if (lastStateRef.current === currentState) {
-      console.log('Duplicate state change ignored:', currentState);
       return;
     }
-    
+
     lastStateRef.current = currentState;
-    
+
     // Clear any existing timeout
     if (stateChangeTimeoutRef.current) {
       clearTimeout(stateChangeTimeoutRef.current);
     }
-    
+
     // Only emit onStateChange for meaningful user interactions
     // Ignore buffering (3), unstarted (-1), and cued (5) states as they're usually programmatic
     const userInteractionStates = [1, 2]; // playing, paused
-    const shouldEmitEvent = !programmaticChangeRef.current && userInteractionStates.includes(currentState);
-    
+    const shouldEmitEvent =
+      !programmaticChangeRef.current &&
+      userInteractionStates.includes(currentState);
+
     if (shouldEmitEvent) {
       // Debounce the state change to prevent rapid events
       stateChangeTimeoutRef.current = setTimeout(() => {
-        console.log('Emitting state change for user interaction:', currentState);
         onStateChange(event);
       }, 300); // 300ms debounce to allow for state settling
     } else {
-      console.log('State change ignored - programmatic or non-interactive state:', currentState);
     }
 
     // Update loading state
-    if (currentState === 3) { // Buffering
+    if (currentState === 3) {
+      // Buffering
       setIsLoading(true);
-    } else if (currentState === 1) { // Playing
+    } else if (currentState === 1) {
+      // Playing
       setIsLoading(false);
     }
 
@@ -260,13 +254,13 @@ const VideoPlayer = ({
         break;
       case 2: // Video bị tạm dừng
         // Chỉ log, không emit events ở đây
-        console.log('Video paused by YouTube player');
+
         break;
     }
   };
 
   const handleError = (event: YouTubeEvent) => {
-    console.error('YouTube player error:', event);
+    console.error("YouTube player error:", event);
     setIsLoading(false);
     onError(event);
   };
@@ -283,13 +277,13 @@ const VideoPlayer = ({
         }
         setNeedsUserInteraction(false);
         setPendingPlay(false);
-        
+
         // Gọi callback để thông báo đã tương tác
         if (onUserInteraction) {
           onUserInteraction();
         }
       } catch (error) {
-        console.error('Error playing video after user interaction:', error);
+        console.error("Error playing video after user interaction:", error);
       }
     }
   };
@@ -308,17 +302,17 @@ const VideoPlayer = ({
             loading="lazy"
             iframeClassName="w-full h-full"
           />
-          
+
           {/* Loading overlay */}
           {isLoading && (
             <div className="absolute inset-0 bg-black/80 flex items-center justify-center">
               <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-violet-500"></div>
             </div>
           )}
-          
+
           {/* User interaction overlay */}
           {needsUserInteraction && pendingPlay && (
-            <div 
+            <div
               className="absolute inset-0 bg-black/60 flex items-center justify-center cursor-pointer z-10"
               onClick={handleVideoClick}
             >
@@ -326,7 +320,9 @@ const VideoPlayer = ({
                 <Play className="w-10 h-10 text-white ml-1" />
               </div>
               <div className="absolute bottom-10 left-4 right-4 text-center text-white">
-                <p className="text-sm font-medium bg-black/50 backdrop-blur-md py-3 px-4 rounded-lg inline-block max-w-md">Nhấn để phát video và đồng bộ với phòng</p>
+                <p className="text-sm font-medium bg-black/50 backdrop-blur-md py-3 px-4 rounded-lg inline-block max-w-md">
+                  Nhấn để phát video và đồng bộ với phòng
+                </p>
               </div>
             </div>
           )}
@@ -339,7 +335,8 @@ const VideoPlayer = ({
             </div>
             <h3 className="text-xl font-bold mb-2">Chưa có video</h3>
             <p className="text-white/70 text-sm">
-              Tìm kiếm và thêm video YouTube từ phần tìm kiếm bên dưới để bắt đầu xem cùng bạn bè
+              Tìm kiếm và thêm video YouTube từ phần tìm kiếm bên phải để bắt
+              đầu xem cùng bạn bè
             </p>
           </div>
         </div>

@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { List, Play, X, ChevronDown, ChevronUp } from 'lucide-react';
-import Image from 'next/image';
-import { Button } from '@/components/Button';
-import { useState } from 'react';
+import { List, Play, X, ChevronDown, ChevronUp } from "lucide-react";
+import Image from "next/image";
+import { Button } from "@/components/Button";
+import { useState } from "react";
 
 export interface QueuedVideo {
   id: string;
@@ -29,7 +29,7 @@ const VideoQueue = ({
 
   return (
     <div className="w-full bg-white/5 backdrop-blur-md rounded-xl p-4 border border-white/10 hover:border-white/20 transition-all shadow-lg">
-      <div 
+      <div
         className="flex items-center justify-between mb-4 cursor-pointer"
         onClick={() => setIsExpanded(!isExpanded)}
       >
@@ -42,15 +42,16 @@ const VideoQueue = ({
             {queue.length} video
           </span>
           {queue.length > 0 && (
-            <Button 
-              variant="ghost" 
-              size="sm" 
+            <Button
+              variant="ghost"
+              size="sm"
               className="w-6 h-6 p-0 rounded-full"
             >
-              {isExpanded ? 
-                <ChevronUp className="w-4 h-4" /> : 
+              {isExpanded ? (
+                <ChevronUp className="w-4 h-4" />
+              ) : (
                 <ChevronDown className="w-4 h-4" />
-              }
+              )}
             </Button>
           )}
         </div>
@@ -64,25 +65,30 @@ const VideoQueue = ({
                 <List className="w-6 h-6 text-gray-500" />
               </div>
               <p>Chưa có video trong hàng chờ</p>
-              <p className="text-xs mt-1">Tìm kiếm và thêm video để bắt đầu xem cùng bạn bè</p>
+              <p className="text-xs mt-1">
+                Tìm kiếm và thêm video để bắt đầu xem cùng bạn bè
+              </p>
             </div>
           ) : (
             <div className="space-y-2 max-h-80 overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
               {queue.map((video, index) => {
                 const isCurrentVideo = currentVideoIndex === index;
-                
+
                 return (
                   <div
                     key={`${video.id}-${index}`}
                     className={`flex items-center space-x-3 rounded-lg p-2 transition-all ${
                       isCurrentVideo
-                        ? 'bg-gradient-to-r from-violet-900/70 to-indigo-900/70 border border-violet-500/50 shadow-[0_0_10px_rgba(139,92,246,0.2)]'
-                        : 'bg-white/10 hover:bg-white/15 border border-transparent hover:border-white/30'
+                        ? "bg-gradient-to-r from-violet-900/70 to-indigo-900/70 border border-violet-500/50 shadow-[0_0_10px_rgba(139,92,246,0.2)]"
+                        : "bg-white/10 hover:bg-white/15 border border-transparent hover:border-white/30"
                     }`}
                   >
                     <div className="relative flex-shrink-0 w-16">
                       <Image
-                        src={video.thumbnail || 'https://via.placeholder.com/128x72.png?text=No+Thumbnail'}
+                        src={
+                          video.thumbnail ||
+                          "https://via.placeholder.com/128x72.png?text=No+Thumbnail"
+                        }
                         alt={video.title}
                         width={128}
                         height={72}
@@ -98,10 +104,16 @@ const VideoQueue = ({
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className={`text-sm font-medium truncate ${isCurrentVideo ? 'text-violet-300' : 'text-white'}`}>
+                      <p
+                        className={`text-sm font-medium truncate ${
+                          isCurrentVideo ? "text-violet-300" : "text-white"
+                        }`}
+                      >
                         {index + 1}. {video.title}
                       </p>
-                      <p className="text-gray-400 text-xs truncate">{video.channelTitle}</p>
+                      <p className="text-gray-400 text-xs truncate">
+                        {video.channelTitle}
+                      </p>
                     </div>
                     <div className="flex space-x-1">
                       {!isCurrentVideo && (

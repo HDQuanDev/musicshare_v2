@@ -1,4 +1,4 @@
-declare module 'youtube-search-api' {
+declare module "youtube-search-api" {
   export interface YouTubeVideo {
     id: string;
     type: string;
@@ -42,21 +42,21 @@ declare module 'youtube-search-api' {
    * Get list of videos, channels, or playlists by keyword
    */
   export function GetListByKeyword(
-    keyword: string, 
-    withPlaylist?: boolean, 
-    limit?: number, 
-    options?: Array<{type: string}>
+    keyword: string,
+    withPlaylist?: boolean,
+    limit?: number,
+    options?: Array<{ type: string }>
   ): Promise<SearchResults>;
-  
+
   /**
    * Get next page of results
    */
   export function NextPage(
-    nextPage: SearchResults['nextPage'],
+    nextPage: SearchResults["nextPage"],
     withPlaylist?: boolean,
     limit?: number
   ): Promise<SearchResults>;
-  
+
   /**
    * Get playlist data by ID
    */
@@ -64,30 +64,28 @@ declare module 'youtube-search-api' {
     playlistId: string,
     limit?: number
   ): Promise<SearchResults>;
-  
+
   /**
    * Get suggestion data
    */
-  export function GetSuggestData(
-    limit?: number
-  ): Promise<SearchResults>;
-  
+  export function GetSuggestData(limit?: number): Promise<SearchResults>;
+
   /**
    * Get channel by channel ID
    */
   export function GetChannelById(
     channelId: string
-  ): Promise<Array<{title: string, content: unknown}>>;
-  
+  ): Promise<Array<{ title: string; content: unknown }>>;
+
   /**
    * Get video details with suggestions
    */
-  export function GetVideoDetails(
-    videoId: string
-  ): Promise<YouTubeVideo & { 
-    suggestion: YouTubeVideo[] 
-  }>;
-  
+  export function GetVideoDetails(videoId: string): Promise<
+    YouTubeVideo & {
+      suggestion: YouTubeVideo[];
+    }
+  >;
+
   /**
    * Get short video list
    */

@@ -23,7 +23,7 @@ function initSocketServer() {
       return null;
     }
     
-    console.log('Setting up Socket.IO server...');
+    
     
     io = new SocketIOServer(httpServer, {
       path: '/api/socket',
@@ -35,7 +35,7 @@ function initSocketServer() {
     });
     
     io.on('connection', (socket) => {
-      console.log('User connected:', socket.id);
+      
       
       socket.on('join-room', (roomCode: string) => {
         socket.join(roomCode);
@@ -43,13 +43,13 @@ function initSocketServer() {
           id: socket.id,
           name: `User ${socket.id.slice(0, 4)}`
         });
-        console.log(`User ${socket.id} joined room ${roomCode}`);
+        
       });
       
       socket.on('leave-room', (roomCode: string) => {
         socket.leave(roomCode);
         socket.to(roomCode).emit('user-left', socket.id);
-        console.log(`User ${socket.id} left room ${roomCode}`);
+        
       });
       
       socket.on('play', (roomCode: string) => {
@@ -76,7 +76,7 @@ function initSocketServer() {
       });
       
       socket.on('disconnect', () => {
-        console.log('User disconnected:', socket.id);
+        
       });
     });
   }

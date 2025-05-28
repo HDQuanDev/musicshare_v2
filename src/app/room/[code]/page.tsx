@@ -27,6 +27,7 @@ import VideoPlayer from "@/components/VideoPlayer";
 import VideoSearch from "@/components/VideoSearch";
 import VideoQueue, { QueuedVideo } from "@/components/VideoQueue";
 import { YouTubePlayer } from "react-youtube";
+import { useToast } from "@/components/ui/Toast";
 
 interface RoomPageProps {
   params: Promise<{
@@ -36,6 +37,9 @@ interface RoomPageProps {
 
 export default function RoomPage({ params }: RoomPageProps) {
   const resolvedParams = use(params);
+  // Get toast functionality
+  const { showToast } = useToast();
+  
   // Trạng thái cơ bản
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -148,10 +152,15 @@ export default function RoomPage({ params }: RoomPageProps) {
 
     socket.on("user-joined", (user) => {
       setUsers((prev) => [...prev, user]);
+      showToast(`${user.name} has joined the room`, 'info', 3000);
     });
 
     socket.on("user-left", (userId) => {
+      const leavingUser = users.find(u => u.id === userId);
       setUsers((prev) => prev.filter((u) => u.id !== userId));
+      if (leavingUser) {
+        showToast(`${leavingUser.name} has left the room`, 'info', 3000);
+      }
     });
 
     socket.on("new-message", (newMessage) => {
@@ -214,6 +223,7 @@ export default function RoomPage({ params }: RoomPageProps) {
         console.log("Media changed:", media);
         setCurrentVideo(media);
         setDuration(media.duration || 0);
+        showToast(`Now playing: ${media.title}`, 'info');
       } else {
         setCurrentVideo(null);
         setDuration(0);
@@ -286,7 +296,8 @@ export default function RoomPage({ params }: RoomPageProps) {
     });
 
     socket.on("room-error", (error) => {
-      alert(error.message);
+      // Use toast instead of alert
+      showToast(error.message, 'error');
       setIsJoining(false);
       router.push("/");
     });
@@ -308,7 +319,7 @@ export default function RoomPage({ params }: RoomPageProps) {
       socket.off("sync-playback");
       socket.off("room-error");
     };
-  }, [resolvedParams.code, socket, router, searchParams, isConnected, youtubePlayer, isMobileChatOpen, isFullUI, currentUserId]);
+  }, [resolvedParams.code, socket, router, searchParams, isConnected, youtubePlayer, isMobileChatOpen, isFullUI, currentUserId, showToast, users]);
 
   // Handle page unload - leave room when user actually leaves
   useEffect(() => {

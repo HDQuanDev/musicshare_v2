@@ -5,15 +5,18 @@ import { Music, Video, Plus, Users, LogIn, ArrowRight, Disc } from 'lucide-react
 import Link from 'next/link';
 import { useSocket } from '@/lib/socket';
 import { useRouter } from 'next/navigation';
+import { useToast } from '@/components/ui/Toast';
 
 export default function Home() {
   const [roomCode, setRoomCode] = useState('');
   const [userName, setUserName] = useState('');
+  const [joinUserName, setJoinUserName] = useState('');
   const [isJoining, setIsJoining] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [animateHero, setAnimateHero] = useState(false);
   const { socket, isConnected } = useSocket();
   const router = useRouter();
+  const { showToast } = useToast();
 
   useEffect(() => {
     // Trigger animation after component mounts
@@ -28,7 +31,10 @@ export default function Home() {
   }, [socket]);
 
   const handleJoinRoom = () => {
-    if (!roomCode.trim() || !userName.trim()) return;
+    if (!roomCode.trim() || !joinUserName.trim()) {
+      showToast('Vui lòng nhập cả mã phòng và tên của bạn', 'error');
+      return;
+    }
     
     setIsJoining(true);
     
@@ -38,21 +44,25 @@ export default function Home() {
     
     socket.emit('join-room', {
       roomCode: roomCode.toUpperCase(),
-      userName: userName.trim()
+      userName: joinUserName.trim()
     });
 
     socket.on('room-joined', () => {
-      router.push(`/room/${roomCode.toUpperCase()}?name=${encodeURIComponent(userName.trim())}`);
+      showToast(`Đang tham gia phòng ${roomCode.toUpperCase()}...`, 'success');
+      router.push(`/room/${roomCode.toUpperCase()}?name=${encodeURIComponent(joinUserName.trim())}`);
     });
 
     socket.on('room-error', (error) => {
-      alert(error.message);
+      showToast(error.message, 'error');
       setIsJoining(false);
     });
   };
 
   const handleCreateRoom = () => {
-    if (!userName.trim()) return;
+    if (!userName.trim()) {
+      showToast('Please enter your name to create a room', 'error');
+      return;
+    }
     
     setIsCreating(true);
     
@@ -65,11 +75,12 @@ export default function Home() {
     });
 
     socket.on('room-created', (data) => {
+      showToast(`Room created successfully! Room code: ${data.roomCode}`, 'success');
       router.push(`/room/${data.roomCode}?name=${encodeURIComponent(userName.trim())}`);
     });
 
     socket.on('room-error', (error) => {
-      alert(error.message);
+      showToast(error.message, 'error');
       setIsCreating(false);
     });
   };
@@ -167,7 +178,7 @@ export default function Home() {
             </div>
             <h3 className="text-xl sm:text-2xl font-bold text-white mb-2 sm:mb-3">Tham gia phòng</h3>
             <p className="text-gray-300 mb-4 sm:mb-6 text-sm sm:text-base">
-              Nhập mã phòng để tham gia phòng có sẵn
+              Nhập mã phòng và tên của bạn để tham gia phòng có sẵn
             </p>
             <div className="space-y-3 sm:space-y-4">
               <div className="relative">
@@ -179,7 +190,7 @@ export default function Home() {
                   maxLength={6}
                   className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-400 focus:bg-white/20 focus:ring-2 focus:ring-blue-400/30 transition-all font-mono tracking-wider text-sm sm:text-base"
                   onKeyDown={(e) => {
-                    if (e.key === 'Enter' && roomCode.trim() && userName.trim() && !isJoining && isConnected) {
+                    if (e.key === 'Enter' && roomCode.trim() && joinUserName.trim() && !isJoining && isConnected) {
                       handleJoinRoom();
                     }
                   }}
@@ -188,9 +199,22 @@ export default function Home() {
                   <div className="absolute top-1/2 right-3 transform -translate-y-1/2 w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
                 )}
               </div>
+              
+              <input
+                type="text"
+                placeholder="Tên của bạn..."
+                value={joinUserName}
+                onChange={(e) => setJoinUserName(e.target.value)}
+                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-400 focus:bg-white/20 focus:ring-2 focus:ring-blue-400/30 transition-all text-sm sm:text-base"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && roomCode.trim() && joinUserName.trim() && !isJoining && isConnected) {
+                    handleJoinRoom();
+                  }
+                }}
+              />
               <button
                 onClick={handleJoinRoom}
-                disabled={!roomCode.trim() || !userName.trim() || isJoining || !isConnected}
+                disabled={!roomCode.trim() || !joinUserName.trim() || isJoining || !isConnected}
                 className="w-full px-6 py-3 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-lg hover:from-blue-600 hover:to-cyan-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-medium shadow-[0_4px_10px_rgba(59,130,246,0.3)] hover:shadow-[0_4px_15px_rgba(59,130,246,0.5)] active:scale-[0.98]"
               >
                 {isJoining ? (

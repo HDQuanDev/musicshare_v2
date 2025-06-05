@@ -5,12 +5,22 @@ const next = require('next');
 const { Server } = require('socket.io');
 const https = require('https'); // Added for YouTube API requests
 
+// Load environment variables
+require('dotenv').config();
+
 const dev = process.env.NODE_ENV !== 'production';
 const hostname = 'localhost';
 const port = process.env.PORT || 3000;
 
 // YouTube API configuration
-const YOUTUBE_API_KEY = process.env.NEXT_PUBLIC_YOUTUBE_API_KEY || 'AIzaSyCxdfz_ZXdAhWta8S_U5CHNo0fVqfjVF7I';
+const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY;
+
+// Validate required environment variables
+if (!YOUTUBE_API_KEY) {
+  console.error('❌ YOUTUBE_API_KEY is required. Please set it in your .env file');
+  console.error('💡 Get your API key from: https://console.developers.google.com/');
+  process.exit(1);
+}
 
 // Next.js app setup
 const app = next({ dev, hostname, port });
@@ -558,6 +568,12 @@ app.prepare().then(() => {
 
 
       }
+    });
+
+    // Handle heartbeat to keep connection alive
+    socket.on('heartbeat', () => {
+      // Simply acknowledge the heartbeat
+      socket.emit('heartbeat-ack');
     });
 
     socket.on('add-to-queue', async (mediaItem) => {

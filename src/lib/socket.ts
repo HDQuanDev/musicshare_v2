@@ -12,6 +12,28 @@ export const initSocket = () => {
     socket = io(process.env.NODE_ENV === "production" ? "" : "", {
       path: "/socket.io",
       transports: ["websocket", "polling"],
+      reconnection: true,
+      reconnectionDelay: 1000,
+      reconnectionAttempts: 10,
+      timeout: 20000,
+      forceNew: false,
+    });
+
+    // Add better connection logging
+    socket.on('connect', () => {
+      console.log('Socket connected:', socket.id);
+    });
+
+    socket.on('disconnect', (reason) => {
+      console.log('Socket disconnected:', reason);
+    });
+
+    socket.on('reconnect', (attemptNumber) => {
+      console.log('Socket reconnected after', attemptNumber, 'attempts');
+    });
+
+    socket.on('reconnect_error', (error) => {
+      console.log('Socket reconnection error:', error);
     });
   }
   return socket;
